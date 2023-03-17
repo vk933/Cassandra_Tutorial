@@ -1,0 +1,220 @@
+Microsoft Windows [Version 10.0.22000.1455]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Cassandra\apache-cassandra-3.11.14\bin>cqlsh
+
+WARNING: console codepage must be set to cp65001 to support utf-8 encoding on Windows platforms.
+If you experience encoding problems, change your console codepage with 'chcp 65001' before starting cqlsh.
+
+Connected to Test Cluster at 127.0.0.1:9042.
+[cqlsh 5.0.1 | Cassandra 3.11.14 | CQL spec 3.4.4 | Native protocol v4]
+Use HELP for help.
+WARNING: pyreadline dependency missing.  Install to enable tab completion.
+cqlsh> help
+
+Documented shell commands:
+===========================
+CAPTURE  CLS          COPY  DESCRIBE  EXPAND  LOGIN   SERIAL  SOURCE   UNICODE
+CLEAR    CONSISTENCY  DESC  EXIT      HELP    PAGING  SHOW    TRACING
+
+CQL help topics:
+================
+AGGREGATES               CREATE_KEYSPACE           DROP_TRIGGER      TEXT
+ALTER_KEYSPACE           CREATE_MATERIALIZED_VIEW  DROP_TYPE         TIME
+ALTER_MATERIALIZED_VIEW  CREATE_ROLE               DROP_USER         TIMESTAMP
+ALTER_TABLE              CREATE_TABLE              FUNCTIONS         TRUNCATE
+ALTER_TYPE               CREATE_TRIGGER            GRANT             TYPES
+ALTER_USER               CREATE_TYPE               INSERT            UPDATE
+APPLY                    CREATE_USER               INSERT_JSON       USE
+ASCII                    DATE                      INT               UUID
+BATCH                    DELETE                    JSON
+BEGIN                    DROP_AGGREGATE            KEYWORDS
+BLOB                     DROP_COLUMNFAMILY         LIST_PERMISSIONS
+BOOLEAN                  DROP_FUNCTION             LIST_ROLES
+COUNTER                  DROP_INDEX                LIST_USERS
+CREATE_AGGREGATE         DROP_KEYSPACE             PERMISSIONS
+CREATE_COLUMNFAMILY      DROP_MATERIALIZED_VIEW    REVOKE
+CREATE_FUNCTION          DROP_ROLE                 SELECT
+CREATE_INDEX             DROP_TABLE                SELECT_JSON
+
+cqlsh> describe keyspaces;
+
+system_traces  system_schema  system_auth  system  system_distributed
+
+cqlsh> CREATE KEYSPACE tutorialspoint
+   ... WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 3};
+
+Warnings :
+Your replication factor 3 for keyspace tutorialspoint is higher than the number of nodes 1
+
+cqlsh> CREATE KEYSPACE tutorialspoint
+   ... WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 1};
+AlreadyExists: Keyspace 'tutorialspoint' already exists
+
+cqlsh>  CREATE KEYSPACE sampleDemoDB
+   ... WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 1};
+cqlsh> describe keyspaces
+
+tutorialspoint  system_auth  sampledemodb        system_traces
+system_schema   system       system_distributed
+
+cqlsh>
+cqlsh> describe keyspaces
+
+tutorialspoint  system_auth  sampledemodb        system_traces
+system_schema   system       system_distributed
+
+cqlsh> ALTER KEYSPACE sampleDemoDB
+   ... WITH replication = {'class':'NetworkTopologyStrategy', 'replication_factor' : 1};
+ConfigurationException: replication_factor is an option for SimpleStrategy, not NetworkTopologyStrategy
+cqlsh> describe keyspace
+Not in any keyspace.
+cqlsh> describe keyspaces
+
+tutorialspoint  system_auth  sampledemodb        system_traces
+system_schema   system       system_distributed
+
+cqlsh> ALTER KEYSPACE sampleDemoDB
+   ... WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 1};
+cqlsh> describe sampledemodb
+
+CREATE KEYSPACE sampledemodb WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'}  AND durable_writes = true;
+
+cqlsh> use sampledemodb
+   ... ;
+cqlsh:sampledemodb> CREATE TABLE employee(
+                ...    emp_id int PRIMARY KEY,
+                ...    emp_name text,
+                ...    emp_city text,
+                ...    emp_sal varint,
+                ...    emp_phone varint
+                ...    );
+cqlsh:sampledemodb> describe tables
+
+employee
+
+cqlsh:sampledemodb> select * from employee;
+
+ emp_id | emp_city | emp_name | emp_phone | emp_sal
+--------+----------+----------+-----------+---------
+
+(0 rows)
+cqlsh:sampledemodb> INSERT INTO employee (emp_id, emp_name, emp_city,
+                ...    emp_phone, emp_sal) VALUES(1,'ram', 'Hyderabad', 9848022338, 50000);
+cqlsh:sampledemodb> INSERT INTO employee (emp_id, emp_name, emp_city,
+                ...    emp_phone, emp_sal) VALUES(2,'robin', 'Hyderabad', 9848022339, 40000);
+cqlsh:sampledemodb> INSERT INTO employee (emp_id, emp_name, emp_city,
+                ...    emp_phone, emp_sal) VALUES(3,'rahman', 'Chennai', 9848022330, 45000);
+cqlsh:sampledemodb> describe employee;
+
+CREATE TABLE sampledemodb.employee (
+    emp_id int PRIMARY KEY,
+    emp_city text,
+    emp_name text,
+    emp_phone varint,
+    emp_sal varint
+) WITH bloom_filter_fp_chance = 0.01
+    AND caching = {'keys': 'ALL', 'rows_per_partition': 'NONE'}
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32', 'min_threshold': '4'}
+    AND compression = {'chunk_length_in_kb': '64', 'class': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND crc_check_chance = 1.0
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99PERCENTILE';
+
+cqlsh:sampledemodb> select * from employee;
+
+ emp_id | emp_city  | emp_name | emp_phone  | emp_sal
+--------+-----------+----------+------------+---------
+      1 | Hyderabad |      ram | 9848022338 |   50000
+      2 | Hyderabad |    robin | 9848022339 |   40000
+      3 |   Chennai |   rahman | 9848022330 |   45000
+
+(3 rows)
+cqlsh:sampledemodb> select * from employee where emp_id = 1;
+
+ emp_id | emp_city  | emp_name | emp_phone  | emp_sal
+--------+-----------+----------+------------+---------
+      1 | Hyderabad |      ram | 9848022338 |   50000
+
+(1 rows)
+cqlsh:sampledemodb> UPDATE employee SET emp_city='Delhi',emp_sal=50000
+                ...    WHERE emp_id=2;
+cqlsh:sampledemodb> select * from employee;
+
+ emp_id | emp_city  | emp_name | emp_phone  | emp_sal
+--------+-----------+----------+------------+---------
+      1 | Hyderabad |      ram | 9848022338 |   50000
+      2 |     Delhi |    robin | 9848022339 |   50000
+      3 |   Chennai |   rahman | 9848022330 |   45000
+
+(3 rows)
+cqlsh:sampledemodb>  INSERT INTO employee (emp_id, emp_name, emp_city,
+                ...    emp_phone, emp_sal) VALUES(4,'man', 'morena', 9848022344, 55000);
+cqlsh:sampledemodb>
+cqlsh:sampledemodb>    INSERT INTO employee (emp_id, emp_name, emp_city,
+                ...    emp_phone, emp_sal) VALUES(4,'man', 'morena', 9848022344, 55000);
+cqlsh:sampledemodb> select * from employee;
+
+ emp_id | emp_city  | emp_name | emp_phone  | emp_sal
+--------+-----------+----------+------------+---------
+      1 | Hyderabad |      ram | 9848022338 |   50000
+      2 |     Delhi |    robin | 9848022339 |   50000
+      4 |    morena |      man | 9848022344 |   55000
+      3 |   Chennai |   rahman | 9848022330 |   45000
+
+(4 rows)
+cqlsh:sampledemodb> INSERT INTO employee (emp_id, emp_name, emp_city,
+                ...    emp_phone, emp_sal) VALUES(5,'mani', 'gwalior', 9848022344, 55000);
+cqlsh:sampledemodb> select * from employee;
+
+ emp_id | emp_city  | emp_name | emp_phone  | emp_sal
+--------+-----------+----------+------------+---------
+      5 |   gwalior |     mani | 9848022344 |   55000
+      1 | Hyderabad |      ram | 9848022338 |   50000
+      2 |     Delhi |    robin | 9848022339 |   50000
+      4 |    morena |      man | 9848022344 |   55000
+      3 |   Chennai |   rahman | 9848022330 |   45000
+
+(5 rows)
+cqlsh:sampledemodb> DELETE emp_sal FROM emp WHERE emp_id=3;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="unconfigured table emp"
+cqlsh:sampledemodb> DELETE emp_sal FROM employee WHERE emp_id=3;
+cqlsh:sampledemodb> select * from employee;
+
+ emp_id | emp_city  | emp_name | emp_phone  | emp_sal
+--------+-----------+----------+------------+---------
+      5 |   gwalior |     mani | 9848022344 |   55000
+      1 | Hyderabad |      ram | 9848022338 |   50000
+      2 |     Delhi |    robin | 9848022339 |   50000
+      4 |    morena |      man | 9848022344 |   55000
+      3 |   Chennai |   rahman | 9848022330 |    null
+
+(5 rows)
+cqlsh:sampledemodb> CREATE TABLE data(name text PRIMARY KEY, email list<text>);
+cqlsh:sampledemodb> INSERT INTO data(name, email) VALUES ('ramu',
+                ... ['abc@gmail.com','cba@yahoo.com'])
+                ... ;
+cqlsh:sampledemodb> NSERT INTO data(name, email) VALUES ('abhishek',
+                ... ['abhishek@gmail.com','cba@gmail.com']);
+SyntaxException: line 1:0 no viable alternative at input 'NSERT' ([NSERT]...)
+cqlsh:sampledemodb> INSERT INTO data(name, email) VALUES ('abhishek',
+                ... ['abhishek@gmail.com','cba@gmail.com']);
+cqlsh:sampledemodb> INSERT INTO data(name, email) VALUES ('anil',
+                ... ['anil@gmail.com','anil@yahoo.com']);
+cqlsh:sampledemodb> select * from data ;
+
+ name     | email
+----------+-----------------------------------------
+     anil |    ['anil@gmail.com', 'anil@yahoo.com']
+ abhishek | ['abhishek@gmail.com', 'cba@gmail.com']
+     ramu |      ['abc@gmail.com', 'cba@yahoo.com']
+
+(3 rows)
+cqlsh:sampledemodb>
